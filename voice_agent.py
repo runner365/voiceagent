@@ -20,9 +20,9 @@ async def run_voice_agent(config: Config, worker_mgr: WorkerMgr):
     logger = get_logger()
     
     # Preload ASR model (blocking operation to ensure readiness)
-    logger.info("Preloading ASR model...")
+    logger.info(f"Preloading ASR model, path: {config.funasr_model_dir}")
     try:
-        ASRModelManager.get_instance().load_model()
+        ASRModelManager.get_instance().load_model(config.funasr_model_dir)
     except Exception as e:
         logger.error(f"Failed to preload ASR model: {e}")
         # Continue anyway? Or exit?

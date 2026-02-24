@@ -118,6 +118,11 @@ class Config:
         return self._config_data
 
     @property
+    def funasr_model_dir(self) -> str:
+        """Get FunASR model directory"""
+        return self.get('funasr_config.model_dir', './models/funasr')
+    
+    @property
     def llm_config(self) -> dict:
         """Get entire LLM configuration"""
         return self.get('llm_config', {})
@@ -180,6 +185,11 @@ class Config:
         output.append("\n[Raw Configuration Data]")
         output.append(yaml.dump(self._config_data, default_flow_style=False))
 
+        # funasr configuration section
+        output.append("\n[FunASR Configuration]")
+        output.append(f"  Model Dir: {self.funasr_model_dir}")
+        
+        # LLM configuration section
         if self.llm_config:
             output.append("\n[LLM Configuration]")
             output.append(f"  Type: {self.llm_type}")

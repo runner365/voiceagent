@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import logging
+from logger import setup_logger, get_logger
 from threading import Lock
 from funasr import AutoModel
 
@@ -15,7 +16,7 @@ class ASRModelManager:
         if ASRModelManager._instance is not None:
             raise RuntimeError("Use get_instance() to access ASRModelManager")
         self.model = None
-        self.log = logging.getLogger("ASRModelManager")
+        self.log = get_logger()
 
     @classmethod
     def get_instance(cls):
@@ -25,11 +26,12 @@ class ASRModelManager:
                     cls._instance = cls()
         return cls._instance
 
-    def load_model(self):
+    def load_model(self, model_dir: str):
         """
         Load the FunASR model if not already loaded.
         """
-        if self.model is not None:
+        if model_dir is None:
+            self.log.info("FunASR model dir is not config, skip loading model")
             return
 
         self.log.info("Loading FunASR model...")
@@ -38,15 +40,14 @@ class ASRModelManager:
             # current file: voice_agent/utils/model_manager.py
             # model dir: voice_agent/funasr_models
             
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            # Go up one level to voice_agent
-            base_dir = os.path.dirname(current_dir)
-            model_dir = os.path.join(base_dir, "funasr_models")
-            
             vad_model_path = os.path.join(model_dir, "fsmn-vad")
             punc_model_path = os.path.join(model_dir, "ct-punc-c")
             asr_model_path = os.path.join(model_dir, "paraformer-zh")
 
+            self.log.info(f"VAD model path: {vad_model_path}")
+            self.log.info(f"PUNC model path: {punc_model_path}")
+            self.log.info(f"ASR model path: {asr_model_path}")
+            
             # Check if model directories exist
             if not os.path.exists(model_dir):
                 raise FileNotFoundError(f"Model directory not found: {model_dir}")
@@ -64,10 +65,10 @@ class ASRModelManager:
             self.log.error(f"Failed to load FunASR model: {e}")
             raise
 
-    def get_model(self):
+    def get_model(self, model_dir: str):
         """
         Get the loaded model instance. Loads it if necessary.
         """
         if self.model is None:
-            self.load_model()
+            self.load_model(model_dir)
         return self.model

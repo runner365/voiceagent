@@ -123,7 +123,7 @@ class AgentSession:
         }
         
         # Get shared funasr model instance
-        self.recognize_model = ASRModelManager.get_instance().get_model()
+        self.recognize_model = ASRModelManager.get_instance().get_model(self.config.funasr_model_dir)
 
         # Initialize LLM client by configuration
         llm_type = self.config.get("llm_config.llm_type", "qwen")

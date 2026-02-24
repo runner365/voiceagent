@@ -12,6 +12,9 @@ protoo_server:
   key_path: "private.key"
   subpath: "voiceagent"
 
+funasr_config:
+  model_dir: "/Users/wei.shi/Documents/code/py_code/voiceagent/funasr_models"
+
 llm_config:
   llm_type: "qwen" # qwen, yuanbao, openai, deepseek
   model_name: ""  # use default model if empty, eg qwen-plus, hunyuan-turbo, gpt-3.5-turbo, deepseek-turbo
