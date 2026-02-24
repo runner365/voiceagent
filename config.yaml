@@ -1,0 +1,21 @@
+# Config file for voice agent
+log:
+  # log level: debug, info, warn, error
+  log_level: "info"
+  # log path
+  log_path: "server.log"
+
+protoo_server:
+  port: 5555
+  ssl_enable: false
+  cert_path: "certificate.crt"
+  key_path: "private.key"
+  subpath: "voiceagent"
+
+llm_config:
+  llm_type: "qwen" # qwen, yuanbao, openai, deepseek
+  model_name: ""  # use default model if empty, eg qwen-plus, hunyuan-turbo, gpt-3.5-turbo, deepseek-turbo
+
+worker_config:
+  worker_bin: "./objs/voiceagent"
+  config_path: "./src/transcode.yaml"

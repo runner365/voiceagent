@@ -1,0 +1,14 @@
+pyyaml
+torch
+torchaudio
+websockets
+ten_vad>=1.0.0
+numpy>=1.21.0
+funasr>=1.0.0
+websockets
+ten_vad>=1.0.0
+numpy>=1.21.0
+funasr>=1.0.0
+aiohttp
+langchain
+langchain-openai

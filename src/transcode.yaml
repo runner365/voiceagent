@@ -1,0 +1,23 @@
+log:
+  level: info
+  file: transcode.log
+
+ws_server:
+  host: 192.168.1.221
+  port: 5555
+  enable_ssl: false
+  subpath: /voiceagent
+
+  # how to download:
+  # wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/matcha-icefall-zh-baker.tar.bz2
+  # tar xvf matcha-icefall-zh-baker.tar.bz2
+  # rm matcha-icefall-zh-baker.tar.bz2  
+  # wget https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos-22khz-univ.onnx
+tts_config:
+  tts_enable: true
+  acoustic_model: "./matcha-icefall-zh-baker/model-steps-3.onnx"
+  vocoder: "./vocos-22khz-univ.onnx"
+  lexicon: "./matcha-icefall-zh-baker/lexicon.txt"
+  tokens: "./matcha-icefall-zh-baker/tokens.txt"
+  dict_dir: "./matcha-icefall-zh-baker/dict"
+  num_threads: 1
