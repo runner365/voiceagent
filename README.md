@@ -18,9 +18,11 @@
 
 Voice Agent 采用模块化设计，主要组件包括：
 
+![架构图](3rdparty/voiceagent.png)
+
 - **核心服务** (`voice_agent.py`) - 主服务器入口，负责协调各个模块
 - **会话管理** - 处理用户会话和对话状态
-- **模型管理** - 管理 ASR (自动语音识别) 模型
+- **模型管理** - 管理 VAD, ASR (自动语音识别) 模型和 TTS (文本到语音) 模型
 - **WebSocket 服务** - 通过接入RTPPilot(WebRTC SFU)，实现实时语音传输和处理, RTPPilot开源地址: [https://github.com/runner365/RTCPilot](https://github.com/runner365/RTCPilot)
 - **Worker 管理** - 处理语音处理等计算密集型任务
 - **配置系统** - 灵活的 YAML 配置管理
@@ -33,33 +35,20 @@ Voice Agent 采用模块化设计，主要组件包括：
 - **DeepSeek** (深度求索)
 
 ```
-{
-    "qwen": {
-        "llm_type": "qwen",
-        "url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "model": "qwen-plus",
-    },
-    "yuanbao": {
-        "llm_type": "yuanbao",
-        "url": "https://api.hunyuan.cloud.tencent.com/v1",
-        "model": "hunyuan-turbo",
-    },
-    "openai": {
-        "llm_type": "openai",
-        "url": "https://api.openai.com/v1",
-        "model": "gpt-3.5-turbo",
-    },
-    "deepseek": {
-        "llm_type": "deepseek",
-        "url": "https://api.deepseek.cn/v1",
-        "model": "deepseek-turbo",
-    },
-}
+llm_config:
+  llm_type: "qwen" # qwen, yuanbao, openai, deepseek
+  model_name: ""  # use default model if empty, eg qwen-plus, hunyuan-turbo, gpt-3.5-turbo, deepseek-turbo
+
 ```
 
 export LLM_API_KEY=your_api_key
 
 在系统环境变量中添加 LLM_API_KEY 变量，值为你的 API 密钥。
+
+其中model_name 为 LLM 模型的名称，根据 llm_type 不同，填写对应的模型名称。
+
+如果model_name 为空，则使用默认模型, 例如 qwen-plus, hunyuan-turbo, gpt-3.5-turbo, deepseek-turbo
+
 
 ## 快速开始
 
@@ -84,6 +73,25 @@ cd voiceagent
 pip install -r requirements.txt
 ```
 
+2.1 **编译c++代码**
+
+需要C++17或更高版本，支持linux和MacOS系统
+```bash
+mkdir objs
+cd objs
+cmake ..
+make
+```
+
+2.2 **配置c++ worker路径**
+```yaml
+worker_config:
+  # 编译后的c++ worker路径
+  worker_bin: "./objs/voiceagent"
+  # c++ worker的配置文件路径
+  config_path: "./src/transcode.yaml"
+```
+
 3. **配置模型**
 
 项目使用 FunASR 模型进行语音识别，首次运行时会自动下载所需模型。
@@ -93,6 +101,13 @@ pip install -r requirements.txt
 ```bash
 python funasr_download.py
 ```
+
+配置fun asr：
+```yaml
+funasr_config:
+  model_dir: "./funasr_models"
+```
+
 
 ### 运行服务
 
@@ -117,7 +132,7 @@ protoo_server:
 # LLM 配置
 llm_config:
   llm_type: "qwen"  # qwen, yuanbao, openai, deepseek
-  model_name: ""  # 使用默认模型，或指定具体模型
+  model_name: ""  # 使用默认模型，或指定具体模型，如 qwen-plus, hunyuan-turbo, gpt-3.5-turbo, deepseek-turbo
 
 # Worker 配置
 worker_config:
@@ -221,58 +236,10 @@ voiceagent/
 1. 编辑 `worker_config` 部分
 2. 修改或替换 Worker 实现
 
-## 部署建议
-
-### 生产环境
-
-- 使用 SSL 加密保护通信
-- 配置适当的日志级别和存储
-- 监控系统资源使用情况
-- 考虑使用负载均衡处理高并发
-
-### 性能优化
-
-- 使用硬件加速（如 GPU）处理语音和 LLM 任务
-- 合理配置 Worker 数量
-- 优化网络带宽和延迟
-
-## 故障排查
-
-### 常见问题
-
-1. **服务启动失败**
-   - 检查端口是否被占用
-   - 验证配置文件格式是否正确
-   - 查看日志文件了解详细错误
-
-2. **语音识别不准确**
-   - 确保音频质量良好
-   - 检查模型是否正确加载
-   - 调整音频输入参数
-
-3. **响应延迟高**
-   - 检查网络连接
-   - 验证系统资源使用情况
-   - 考虑使用更强大的硬件
-
-### 日志系统
-
-日志文件默认存储在 `server.log`，包含详细的系统运行信息和错误记录。
 
 ## 许可证
 
 [MIT License](LICENSE)
 
-## 贡献
-
-欢迎提交 Issue 和 Pull Request 来改进这个项目！
-
-## 联系方式
-
-- 项目维护者：[Your Name]
-- 邮箱：[your.email@example.com]
-- GitHub：[repository-url]
-
----
 
 **Voice Agent** - 让 AI 对话更自然、更智能、更实时！ 🚀

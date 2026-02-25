@@ -13,7 +13,7 @@ protoo_server:
   subpath: "voiceagent"
 
 funasr_config:
-  model_dir: "/Users/wei.shi/Documents/code/py_code/voiceagent/funasr_models"
+  model_dir: "./funasr_models"
 
 llm_config:
   llm_type: "qwen" # qwen, yuanbao, openai, deepseek
