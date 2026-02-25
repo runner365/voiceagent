@@ -16,9 +16,11 @@
 
 ## 技术架构
 
-Voice Agent 采用模块化设计，主要组件包括：
+**VoiceAgent项目是基于RTCPilot(WebRTC SFU)实现的实时语音对话 AI 智能体.**
 
 ![架构图](3rdparty/voiceagent.png)
+
+Voice Agent 采用模块化设计，主要组件包括：
 
 - **核心服务** (`voice_agent.py`) - 主服务器入口，负责协调各个模块
 - **会话管理** - 处理用户会话和对话状态
@@ -26,6 +28,7 @@ Voice Agent 采用模块化设计，主要组件包括：
 - **WebSocket 服务** - 通过接入RTPPilot(WebRTC SFU)，实现实时语音传输和处理, RTPPilot开源地址: [https://github.com/runner365/RTCPilot](https://github.com/runner365/RTCPilot)
 - **Worker 管理** - 处理语音处理等计算密集型任务
 - **配置系统** - 灵活的 YAML 配置管理
+
 
 ## 支持的 LLM 模型
 
@@ -74,8 +77,13 @@ pip install -r requirements.txt
 ```
 
 2.1 **编译c++代码**
+C++ worker主要功能：
+- 转码：OPUS解码PCM，PCM编码OPUS
+- TTS：使用Matcha-ICEFALL-ZH-BAKER模型进行文本到语音合成
 
-需要C++17或更高版本，支持linux和MacOS系统
+会自动被voiceagent调用.
+
+需要C++17或更高版本，支持linux和MacOS系统.
 ```bash
 mkdir objs
 cd objs
@@ -91,6 +99,45 @@ worker_config:
   # c++ worker的配置文件路径
   config_path: "./src/transcode.yaml"
 ```
+
+2.3 **C++ worker配置文件**
+C++ worker的配置文件是独立的，见 `src/transcode.yaml`
+```yaml
+log:
+  level: info # debug, info, warn, error
+  file: transcode.log # 日志文件路径
+
+ws_server:
+  host: 192.168.1.221 # voiceagent 服务器IP, C++ worker会去主动连接这个IP
+  port: 5555 # voiceagent 服务器端口, C++ worker会去主动连接这个端口
+  enable_ssl: false # 是否启用SSL, 建议在生产环境中启用
+  subpath: /voiceagent # voiceagent 服务器子路径, C++ worker会去主动连接这个子路径
+
+  # how to download:
+  # wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/matcha-icefall-zh-baker.tar.bz2
+  # tar xvf matcha-icefall-zh-baker.tar.bz2
+  # rm matcha-icefall-zh-baker.tar.bz2  
+  # wget https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos-22khz-univ.onnx
+tts_config:
+  tts_enable: true
+  acoustic_model: "./matcha-icefall-zh-baker/model-steps-3.onnx"
+  vocoder: "./vocos-22khz-univ.onnx"
+  lexicon: "./matcha-icefall-zh-baker/lexicon.txt"
+  tokens: "./matcha-icefall-zh-baker/tokens.txt"
+  dict_dir: "./matcha-icefall-zh-baker/dict"
+  num_threads: 1
+```
+
+需要注意的是，C++ worker的配置文件中的IP和端口需要与voiceagent的配置文件中的IP和端口一致.
+
+TTS需要下载模型，下载方法：
+```bash
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/matcha-icefall-zh-baker.tar.bz2
+tar xvf matcha-icefall-zh-baker.tar.bz2
+rm matcha-icefall-zh-baker.tar.bz2  
+wget https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos-22khz-univ.onnx
+```
+
 
 3. **配置模型**
 
