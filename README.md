@@ -1,5 +1,7 @@
 # Voice Agent - 实时语音对话 AI 智能体
 
+中文 | [English](README_en.md)
+
 ![Voice Agent](https://img.shields.io/badge/Voice-Agent-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8+-green.svg)
 ![AI](https://img.shields.io/badge/AI-Real--time-orange.svg)
