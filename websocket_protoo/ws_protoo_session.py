@@ -299,10 +299,12 @@ class WsProtooSession:
             if codec == "opus":
                 # handle opus data from client in sfu
                 await self._handle_opus_data(room_id, user_id, audio_base64)
+            else:
+                self.log.error("Unsupported codec in audio buffer notification from %s: %s", self.peer, codec)
             # await self.session_mgr.input_audio_data(room_id, user_id, audio_base64, codec, self)
             # Here you can add code to process the audio buffer if needed
-        elif method == "heartbeat":
-            self.log.info("Received heartbeat from %s: %s", self.peer, json.dumps(data))
+        elif method == "sfuheartbeat":
+            self.log.info("Received sfuheartbeat from %s: %s", self.peer, json.dumps(data))
         elif method == "pcm_data":
             pcm_base64 = data.get("msg")
             if not isinstance(room_id, str) or not isinstance(user_id, str) or not isinstance(pcm_base64, str):
@@ -316,7 +318,7 @@ class WsProtooSession:
             if not isinstance(room_id, str) or not isinstance(user_id, str) or not isinstance(tts_opus_base64, str):
                 self.log.error("Invalid tts opus data notification from %s: %s", self.peer, data)
                 return
-            self.log.info("handle tts opus data:%s", json.dumps(data))
+            # self.log.info("handle tts opus data:%s", json.dumps(data))
             task_index = data.get("taskIndex")
             if not isinstance(task_index, int):
                 self.log.error("Invalid tts opus data notification from %s: %s", self.peer, data)
@@ -349,7 +351,7 @@ class WsProtooSession:
 
     async def _handle_tts_opus_data(self, room_id: str, user_id: str, tts_opus_base64: str, task_index: int) -> None:
         """Handle tts opus data from client in sfu."""
-        self.log.info("handle tts opus data from voice agent worker: room_id=%s, user_id=%s, tts_opus_base64 len=%d", room_id, user_id, len(tts_opus_base64))
+        self.log.debug("handle tts opus data from client in sfu: room_id=%s, user_id=%s, tts_opus_base64 len=%d", room_id, user_id, len(tts_opus_base64))
         session = self.worker_mgr.get_session(user_id)
         if session is None:
             self.log.error("session is None, can not send tts opus data")

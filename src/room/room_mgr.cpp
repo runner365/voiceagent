@@ -57,7 +57,7 @@ void RoomMgr::OnConnected() {
 }
 
 void RoomMgr::OnResponse(const std::string& text) {
-    LogDebugf(logger_, "RoomMgr OnResponse text: %s", text.c_str());
+    LogInfof(logger_, "RoomMgr OnResponse text: %s", text.c_str());
 }
 
 void RoomMgr::OnNotification(const std::string& text) {
@@ -82,6 +82,7 @@ void RoomMgr::OnNotification(const std::string& text) {
             //opus data from sfu
             OnHandleOpusData(j["data"]);
         } else if (method == "response.text") {
+            LogInfof(logger_, "RoomMgr OnNotification response.text: %s", j["data"].dump().c_str());
             OnHandleResponseText(j["data"]);
         } else {
             LogErrorf(logger_, "RoomMgr OnNotification unhandled method: %s", method.c_str());
@@ -197,7 +198,7 @@ void RoomMgr::EchoRequest() {
         return;
     }
     int64_t now_ms = now_millisec();
-    if (now_ms - last_echo_ms_ < 15*1000) {
+    if (now_ms - last_echo_ms_ < 5*1000) {
         return;
     }
     last_echo_ms_ = now_ms;
@@ -217,7 +218,7 @@ void RoomMgr::OnCheckRoomAlive() {
     for (auto it = rooms_.begin(); it != rooms_.end();) {
         std::shared_ptr<Room> room = it->second;
         if (!room->IsAlive()) {
-            LogInfof(logger_, "Room %s is not alive, remove it", room->GetRoomId().c_str());
+            LogInfof(logger_, "Room is not alive, remove it: %s", room->GetRoomId().c_str());
             it->second->Close();
             it = rooms_.erase(it);
         } else {

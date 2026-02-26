@@ -45,6 +45,8 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<Logger> logger = std::make_unique<Logger>(
         config.log_config.log_file, GetLogLevelFromString(config.log_config.log_level), true);
 
+    LogInfof(logger.get(), config.Dump().c_str());
+    LogInfof(logger.get(), "logger level: %s, log file: %s", config.log_config.log_level.c_str(), config.log_config.log_file.c_str());
     LogInfof(logger.get(), "uv_run start");
     std::this_thread::sleep_for(std::chrono::seconds(5));
 

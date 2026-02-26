@@ -73,7 +73,7 @@ int WebSocketSessionBase::HandleFrame(DataBuffer& data) {
             }
             case WS_OP_PONG_TYPE:
             {
-                LogDebugf(logger_, "receive ws pong");
+                LogDebug(logger_, "receive ws pong");
                 last_recv_pong_ms_ = now_millisec();
                 break;
             }
@@ -110,6 +110,7 @@ int WebSocketSessionBase::HandleFrame(DataBuffer& data) {
 
 void WebSocketSessionBase::HandleWsPing() {
     for (auto item : recv_buffer_vec_) {
+        LogDebug(logger_, "receive ws ping and send pong");
         SendWsFrame((uint8_t*)item->Data(), item->DataLen(), WS_OP_PONG_TYPE);
     }
 }

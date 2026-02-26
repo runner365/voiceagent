@@ -75,6 +75,9 @@ public:
         buffer_ = new char[len];
         buffer_len_ = len;
     }
+    bool IsAsync() const {
+        return async_;
+    }
     char* GetBuffer() {
         return buffer_;
     }
@@ -88,7 +91,6 @@ public:
         ss << "[" << level << "]" << "[" << get_now_str() << "]"
            << buffer << "\r\n";
         if (async_) {
-            std::cout << ss.str();
             InsertLog(ss.str());
             return;
         }
@@ -118,6 +120,7 @@ private:
         std::vector<std::string> logs;
         while (running_)
         {
+            logs.clear();
             bool r = GetLogs(logs);
             if (!r) {
                 continue;
@@ -142,7 +145,6 @@ private:
                 }
             }
             fclose(fp);
-            logs.clear();
         }
     }
     void InsertLog(const std::string& log) {
@@ -192,8 +194,16 @@ inline void LogErrorf(Logger* logger, const char* fmt, ...) {
     if (logger == nullptr || logger->GetLevel() > LOGGER_ERROR_LEVEL) {
         return;
     }
-    char* buffer = logger->GetBuffer();
-    size_t bsize = logger->BufferSize();
+    char* buffer = nullptr;
+    size_t bsize = 0;
+
+    if (logger->IsAsync()) {
+        buffer = new char[10*1024];
+        bsize = 10*1024;
+    } else {
+        buffer = logger->GetBuffer();
+        bsize = logger->BufferSize();
+    }
     va_list ap;
  
     va_start(ap, fmt);
@@ -202,6 +212,9 @@ inline void LogErrorf(Logger* logger, const char* fmt, ...) {
     va_end(ap);
 
     logger->Logf("E", buffer);
+    if (logger->IsAsync()) {
+        delete[] buffer;
+    }
 }
 
 inline void LogWarn(Logger* logger, const char* data) {
@@ -215,8 +228,16 @@ inline void LogWarnf(Logger* logger, const char* fmt, ...) {
     if (logger == nullptr || logger->GetLevel() > LOGGER_WARN_LEVEL) {
         return;
     }
-    char* buffer = logger->GetBuffer();
-    size_t bsize = logger->BufferSize();
+    char* buffer = nullptr;
+    size_t bsize = 0;
+
+    if (logger->IsAsync()) {
+        buffer = new char[10*1024];
+        bsize = 10*1024;
+    } else {
+        buffer = logger->GetBuffer();
+        bsize = logger->BufferSize();
+    }
     va_list ap;
  
     va_start(ap, fmt);
@@ -224,6 +245,9 @@ inline void LogWarnf(Logger* logger, const char* fmt, ...) {
     va_end(ap);
 
     logger->Logf("W", buffer);
+    if (logger->IsAsync()) {
+        delete[] buffer;
+    }
 }
 
 inline void LogInfo(Logger* logger, const char* data) {
@@ -237,8 +261,16 @@ inline void LogInfof(Logger* logger, const char* fmt, ...) {
     if (logger == nullptr || logger->GetLevel() > LOGGER_INFO_LEVEL) {
         return;
     }
-    char* buffer = logger->GetBuffer();
-    size_t bsize = logger->BufferSize();
+    char* buffer = nullptr;
+    size_t bsize = 0;
+
+    if (logger->IsAsync()) {
+        buffer = new char[10*1024];
+        bsize = 10*1024;
+    } else {
+        buffer = logger->GetBuffer();
+        bsize = logger->BufferSize();
+    }
     va_list ap;
  
     va_start(ap, fmt);
@@ -249,10 +281,13 @@ inline void LogInfof(Logger* logger, const char* fmt, ...) {
 
     //std::cout << "loginfo size:" << bsize << ", str len:" << ret_len << "\r\n\r\n";
     logger->Logf("I", buffer);
+    if (logger->IsAsync()) {
+        delete[] buffer;
+    }
 }
 
 inline void LogDebug(Logger* logger, const char* data) {
-    if (logger == nullptr || logger->GetLevel() > LOGGER_INFO_LEVEL) {
+    if (logger == nullptr || logger->GetLevel() > LOGGER_DEBUG_LEVEL) {
         return;
     }
     logger->Logf("D", data);
@@ -262,8 +297,16 @@ inline void LogDebugf(Logger* logger, const char* fmt, ...) {
     if (logger == nullptr || logger->GetLevel() > LOGGER_DEBUG_LEVEL) {
         return;
     }
-    char* buffer = logger->GetBuffer();
-    size_t bsize = logger->BufferSize();
+    char* buffer = nullptr;
+    size_t bsize = 0;
+
+    if (logger->IsAsync()) {
+        buffer = new char[10*1024];
+        bsize = 10*1024;
+    } else {
+        buffer = logger->GetBuffer();
+        bsize = logger->BufferSize();
+    }
     va_list ap;
  
     va_start(ap, fmt);
@@ -272,6 +315,9 @@ inline void LogDebugf(Logger* logger, const char* fmt, ...) {
     va_end(ap);
 
     logger->Logf("D", buffer);
+    if (logger->IsAsync()) {
+        delete[] buffer;
+    }
 }
 
 inline void LogInfoData(Logger* logger, const uint8_t* data, size_t len, const char* dscr) {

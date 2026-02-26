@@ -31,7 +31,7 @@ void Room::OnHandleResponseText(const std::string& user_id, const std::string& t
 }
 
 void Room::OnHanldeOpusData(const std::string& user_id, DATA_BUFFER_PTR data_ptr) {
-    LogDebugf(logger_, "Room %s Handle user input  Opus Data user_id: %s, data_len: %zu", 
+    LogDebugf(logger_, "Room Handle user input  Opus Data, roomId:%s, user_id: %s, data_len: %zu", 
         room_id_.c_str(), user_id.c_str(), data_ptr->DataLen());
     user_id_ = user_id;
     if (!audio_decoder_ptr_) {
@@ -53,7 +53,7 @@ void Room::OnHanldeOpusData(const std::string& user_id, DATA_BUFFER_PTR data_ptr
     
     media_pkt_ptr->SetPrivateData(prv);
 
-    audio_decoder_ptr_->OnData(media_pkt_ptr);
+    audio_decoder_ptr_->InputPacket(media_pkt_ptr, true);
 }
 
 void Room::Close() {
