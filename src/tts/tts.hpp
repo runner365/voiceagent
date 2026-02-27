@@ -27,7 +27,7 @@ public:
 private:
     Logger* logger_ = nullptr;
     std::unique_ptr<sherpa_onnx::cxx::OfflineTts> tts_;
-    bool tts_enabled_ = false;
+    bool init_ = false;
     int32_t sample_rate_ = 0;
 };
 

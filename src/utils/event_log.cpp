@@ -35,7 +35,7 @@ EventLog::EventLog(const std::string& filename)
 EventLog::~EventLog()
 {
     stop_.store(true);
-    cv_.notify_one();
+    cv_.notify_all();
     if (worker_.joinable()) worker_.join();
 }
 

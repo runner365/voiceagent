@@ -50,7 +50,7 @@ public:
     {
         if (async_) {
             running_ = false;
-            log_cv_.notify_one();
+            log_cv_.notify_all();
             log_thread_->join();
         }
         delete[] buffer_;

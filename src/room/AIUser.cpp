@@ -6,15 +6,17 @@ AIUser::AIUser(const std::string& user_id, Pcm2OpusCallbackI* cb, Logger* logger
     : user_id_(user_id), cb_(cb), logger_(logger) {
     tts_ptr_ = std::make_unique<SherpaOnnxTTSImpl>(logger_);
 
-    LogInfof(logger_, "AIUser %s created", user_id_.c_str());
+    LogInfof(logger_, "AIUser constructor, user_id: %s", user_id_.c_str());
     running_ = true;
     tts_thread_ptr_ = std::make_unique<std::thread>(&AIUser::OnTtsThread, this);
 }
 
 AIUser::~AIUser() {
-    LogInfof(logger_, "AIUser %s destroyed", user_id_.c_str());
+    LogInfof(logger_, "AIUser destructor, user_id: %s", user_id_.c_str());
     running_ = false;
+    text_cv_.notify_all();
     if (tts_thread_ptr_) {
+        LogInfof(logger_, "AIUser tts thread join, user_id: %s", user_id_.c_str());
         tts_thread_ptr_->join();
         tts_thread_ptr_.reset();
     }
@@ -55,6 +57,7 @@ void AIUser::InputText(const std::string& text) {
 void AIUser::OnTtsThread() {
     LogInfof(logger_, "AIUser %s tts thread started", user_id_.c_str());
     while(running_) {
+        LogInfof(logger_, "AIUser %s tts thread waiting for text, queue size: %zu", user_id_.c_str(), GetTextQueueSize());
         std::string text = GetTextFromQueue();
         if (text.empty()) {
             continue;
@@ -85,10 +88,13 @@ void AIUser::OnTtsThread() {
             if (!pcm2opus_) {
                 pcm2opus_.reset(new Pcm2Opus(this, logger_));
             }
+            LogInfof(logger_, "synthesize text to pcm, text:%s, sample_rate:%d, audio_data size:%zu, user_id: %s", 
+                text.c_str(), sample_rate, audio_data.size(), user_id_.c_str());
             PCM_DATA_INFO pcm_data_info(audio_data, sample_rate, 1);
             pcm2opus_->InsertPcmData(pcm_data_info);
         }
     }
+    LogInfof(logger_, "AIUser tts thread stopped, user_id: %s", user_id_.c_str());
 }
 
 void AIUser::OnOpusData(const std::vector<uint8_t>& opus_data, int sample_rate, int channels, int64_t pts, int task_index) {

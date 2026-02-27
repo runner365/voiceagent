@@ -32,9 +32,13 @@ SherpaOnnxTTSImpl::~SherpaOnnxTTSImpl() {
 }
 
 int SherpaOnnxTTSImpl::Init() {
+    if (init_) {
+        return 0;
+    }
+
     auto& tts_cfg = Config::Instance().tts_config;
-    tts_enabled_ = tts_cfg.tts_enable;
-    if (!tts_enabled_) {
+    bool tts_enabled = tts_cfg.tts_enable;
+    if (!tts_enabled) {
         LogInfof(logger_, "SherpaOnnxTTSImpl is disabled by configuration");
         return 0;
     }
@@ -99,25 +103,28 @@ int SherpaOnnxTTSImpl::Init() {
     }
 
     LogInfof(logger_, "SherpaOnnxTTSImpl initialized, sample_rate=%d", sample_rate_);
+    init_ = true;
     return 0;
 }
 
 void SherpaOnnxTTSImpl::Release() {
+    if (!init_) {
+        return;
+    }
+    init_ = false;
+    LogInfof(logger_, "SherpaOnnxTTSImpl releasing");
     if (tts_) {
         tts_.reset();
         sample_rate_ = 0;
     }
-    tts_enabled_ = false;
+    LogInfof(logger_, "SherpaOnnxTTSImpl released");
 }
 
 int SherpaOnnxTTSImpl::SynthesizeText(const std::string& text, int32_t& sample_rate,
                             std::vector<float>& audio_data) {
     sample_rate = 0;
     audio_data.clear();
-    if (!tts_enabled_) {
-        LogWarnf(logger_, "SherpaOnnxTTSImpl is disabled; cannot synthesize text");
-        return -1;
-    }
+
     if (!tts_) {
         LogWarnf(logger_, "SherpaOnnxTTSImpl is not initialized");
         return -1;
